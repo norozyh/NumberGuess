@@ -2,7 +2,7 @@
 
 PSQL="psql --username=freecodecamp --dbname=guess_number --tuples-only -t -c"
 SECRET=$(( $RANDOM % 1000 +1 ))
-echo $SECRET
+
 echo Enter your username:
 read USERNAME
 
@@ -20,7 +20,7 @@ else
   RESULT=$($PSQL "SELECT player_id,games_played,best_game FROM players WHERE name='$USERNAME';")
   echo $RESULT | while read PLAYER_ID BAR GAMES_PLAYED BAR BEST_GAME
   do
-    echo Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses.
+    echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
   done
 fi
 FLAG=0
@@ -29,26 +29,29 @@ while [[ $FLAG = 0 ]]
 do
   echo Guess the secret number between 1 and 1000:
   read GUESS
-  CNT=$(( $CNT+1 ))
+  
   if ! [[ $GUESS =~ ^[0-9]+$ ]]
   then
     echo "That is not an integer, guess again:"
-  elif [[ $GUESS > $SECRET ]]
+    
+  elif [[ $GUESS -gt $SECRET ]]
   then
     echo "It's lower than that, guess again:"
-  elif [[ $GUESS < $SECRET ]]
+    CNT=$(( $CNT+1 ))
+  elif [[ $GUESS -lt $SECRET ]]
   then
     echo "It's higher than that, guess again:"
+    CNT=$(( $CNT+1 ))
   else
-    echo You guessed it in $CNT tries. The secret number was $SECRET. Nice job!
+    
     FLAG=1
     #db中存入记录
     INSERT_GAMES_PLAYED=$($PSQL "UPDATE players SET games_played=games_played+1 WHERE player_id=$PLAYER_ID")
     BEST_GAME=$($PSQL "SELECT best_game FROM players WHERE player_id=$PLAYER_ID;")
-    if [[ -z $BEST_GAME ]] || [[ $BEST_GAME > $CNT ]]
+    if [[ $BEST_GAME -eq 0 ]] || [[ $BEST_GAME -gt $CNT ]]
     then
-      echo updated $BEST_GAME
-      INSERT_BEST_GAME=$($PSQL "UPDATE players SET best_game=$CNT WHERE player_id=$PLAYER_ID;")  
+      INSERT_BEST_GAME=$($PSQL "UPDATE players SET best_game=$CNT WHERE player_id=$PLAYER_ID;") 
     fi
+    echo "You guessed it in $CNT tries. The secret number was $SECRET. Nice job!" 
   fi
 done
