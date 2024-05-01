@@ -25,11 +25,11 @@ else
 fi
 FLAG=0
 CNT=0
+echo Guess the secret number between 1 and 1000:
 while [[ $FLAG = 0 ]]
 do
-  echo Guess the secret number between 1 and 1000:
   read GUESS
-  
+  CNT=$(( $CNT+1 ))
   if ! [[ $GUESS =~ ^[0-9]+$ ]]
   then
     echo "That is not an integer, guess again:"
@@ -37,13 +37,12 @@ do
   elif [[ $GUESS -gt $SECRET ]]
   then
     echo "It's lower than that, guess again:"
-    CNT=$(( $CNT+1 ))
+    
   elif [[ $GUESS -lt $SECRET ]]
   then
     echo "It's higher than that, guess again:"
-    CNT=$(( $CNT+1 ))
+    
   else
-    CNT=$(( $CNT+1 ))
     FLAG=1
     #db中存入记录
     INSERT_GAMES_PLAYED=$($PSQL "UPDATE players SET games_played=games_played+1 WHERE player_id=$PLAYER_ID")
@@ -52,6 +51,6 @@ do
     then
       INSERT_BEST_GAME=$($PSQL "UPDATE players SET best_game=$CNT WHERE player_id=$PLAYER_ID;") 
     fi
-    echo "You guessed it in $CNT tries. The secret number was $SECRET. Nice job!" 
+    echo "You guessed it in $CNT tries. The secret number was $GUESS. Nice job!" 
   fi
 done
