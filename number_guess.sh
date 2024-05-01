@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PSQL="psql --username=freecodecamp --dbname=guess_number --tuples-only -t -c"
+PSQL="psql --username=freecodecamp --dbname=number_guess --tuples-only -t -c"
 SECRET=$(( $RANDOM % 1000 +1 ))
 
 echo Enter your username:
@@ -17,8 +17,8 @@ then
   PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE name='$USERNAME'")
 #若有，欢迎并显示历史战绩
 else
-  RESULT=$($PSQL "SELECT player_id,games_played,best_game FROM players WHERE name='$USERNAME';")
-  echo $RESULT | while read PLAYER_ID BAR GAMES_PLAYED BAR BEST_GAME
+  RESULT=$($PSQL "SELECT name,games_played,best_game FROM players WHERE player_id=$PLAYER_ID;")
+  echo $RESULT | while read USERNAME BAR GAMES_PLAYED BAR BEST_GAME
   do
     echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
   done
@@ -43,7 +43,7 @@ do
     echo "It's higher than that, guess again:"
     CNT=$(( $CNT+1 ))
   else
-    
+    CNT=$(( $CNT+1 ))
     FLAG=1
     #db中存入记录
     INSERT_GAMES_PLAYED=$($PSQL "UPDATE players SET games_played=games_played+1 WHERE player_id=$PLAYER_ID")
